@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.BlogDeployment.name }}
+spec:
+  replicas: {{ .Values.BlogDeployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.BlogDeployment.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.BlogDeployment.app }}
+    spec:
+      containers:
+      - name: backend-container
+        image: {{ .Values.BlogDeployment.image.repository }}:{{ .Values.BlogDeployment.image.tag }}
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: my-app-secrets
+              key: MONGODB_URI
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: my-app-secrets
+              key: JWT_SECRET
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.readinessProbe.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: {{ .Values.livenessProbe.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3

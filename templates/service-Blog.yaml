@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.servicefile.name }}
+spec:
+  selector:
+    app: {{ .Values.servicefile.app }}
+  ports:
+    - protocol: TCP
+      port: 80  # Port on which the service will be exposed inside the cluster
+      targetPort: 5000  # Port on the container to which traffic will be directed
+      # nodePort: 30007  # Port on each node where the service will be accessible (optional, but ensure it's within the range 30000-32767)
+  type: {{ .Values.servicefile.type }}  # Use NodePort for local clusters
